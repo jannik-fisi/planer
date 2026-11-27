@@ -1,5 +1,6 @@
 # Spielt neue Datenbank-Änderungen (supabase/migrations) nach dem Merge auf main
-# automatisch in das Supabase-Projekt juki-test ein.
+# automatisch in das Supabase-Projekt juki-test ein, zusammen mit den erfundenen Testdaten (supabase/seed.sql).
+# Bei jedem Pull Request laufen vorher die automatischen Tests der Rechte-Regeln (supabase/tests/).
 #
 # Einmalig nötig (Settings → Secrets and variables → Actions):
 #   SUPABASE_ACCESS_TOKEN      – Zugangsschlüssel aus Supabase, nur für juki-test
@@ -11,6 +12,7 @@ on:
     branches: [main]
     paths:
       - 'supabase/migrations/**'
+      - 'supabase/seed.sql'
       - '.github/workflows/datenbank.yml'
   pull_request:
     paths:
@@ -34,6 +36,8 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      DB: postgresql://postgres:postgres@127.0.0.1:54322/postgres
     steps:
       - uses: actions/checkout@v4
       - uses: supabase/setup-cli@v1
@@ -43,8 +47,16 @@ jobs:
         run: |
           supabase db start
           supabase db push --yes
+      - name: Rechte-Regeln testen (leere Datenbank)
+        run: psql "$DB" -f supabase/tests/rechte.sql
+      - name: Testdaten einspielen (zweimal, damit sicher ist, dass Wiederholen nichts kaputt macht)
+        run: |
+          psql "$DB" -v ON_ERROR_STOP=1 -q -f supabase/seed.sql
+          psql "$DB" -v ON_ERROR_STOP=1 -q -f supabase/seed.sql
+      - name: Rechte-Regeln testen (mit Testdaten)
+        run: psql "$DB" -f supabase/tests/rechte.sql
       - name: Kontrolle
-        run: psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -v ON_ERROR_STOP=1 -c "select public.datenbank_stand();"
+        run: psql "$DB" -v ON_ERROR_STOP=1 -c "select public.datenbank_stand();"
 
   einspielen:
     name: In juki-test einspielen
@@ -72,8 +84,9 @@ jobs:
       - name: Mit juki-test verbinden
         run: supabase link --project-ref "$PROJEKT" --password "$SUPABASE_DB_PASSWORD"
 
+      # --include-seed: Testdaten nur hier, im Test-Projekt. Für juki-live später NIE verwenden!
       - name: Diese Änderungen werden eingespielt
-        run: supabase db push --remote --password "$SUPABASE_DB_PASSWORD" --dry-run
+        run: supabase db push --remote --password "$SUPABASE_DB_PASSWORD" --include-seed --dry-run
 
       - name: Einspielen
-        run: supabase db push --remote --password "$SUPABASE_DB_PASSWORD" --yes
+        run: supabase db push --remote --password "$SUPABASE_DB_PASSWORD" --include-seed --yes
