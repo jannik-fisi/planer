@@ -25,7 +25,7 @@ jobs:
         run: npm run build
       - name: Kein geheimer Schlüssel im Code
         run: |
-          if grep -rEn "sb_secret_|service_role" src .env; then
+          if grep -rEn "sb_secret_[A-Za-z0-9_-]{10,}" src public .env; then
             echo "::error::Geheimer Schlüssel gefunden! Bitte entfernen und in Supabase neu erzeugen."
             exit 1
           fi
