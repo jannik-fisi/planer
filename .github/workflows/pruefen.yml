@@ -1,5 +1,5 @@
 # Prüft bei jedem Pull Request und auf main, ob die App fehlerfrei baut.
-# Veröffentlicht wird nicht hier, sondern automatisch von Cloudflare Pages.
+# Veröffentlicht wird nicht hier, sondern in „Veröffentlichen“ nach dem Merge auf main.
 name: Prüfen
 
 on:

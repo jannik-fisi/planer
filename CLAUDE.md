@@ -12,8 +12,9 @@ Dieses Repository ist der **JuKi Planer** der Jugendkirche JuKi Paulus. Grundlag
 
 ## Technik
 - Vite + React + TypeScript, PWA über `vite-plugin-pwa` (Update-Hinweis, kein stilles Update)
-- Supabase (`src/lib/supabase.ts`), Werte aus `.env` (Test) bzw. Cloudflare-Umgebungsvariablen (Live)
-- Veröffentlichung: Cloudflare Pages (Build `npm run build`, Ausgabe `dist`), Sicherheits-Header in `public/_headers`
+- Supabase (`src/lib/supabase.ts`), Werte aus `.env` (Test); Live-Werte später im Veröffentlichungs-Ablauf
+- Veröffentlichung: GitHub Pages über `.github/workflows/veroeffentlichen.yml`, App liegt unter `/planer/` (`base` in `vite.config.ts`). Sicherheitsregeln (CSP) als Meta-Tag im Build, 404.html = index.html
+- Repository ist **öffentlich**: niemals Personendaten, Testdaten mit echten Namen oder Geheimnisse committen
 - Design aus Prototyp v5: Variablen in `src/styles/app.css`, mobil zuerst, Tippflächen ≥ 44 px
 - Texte in der App: Deutsch, freundlich, kurz, „du“
 

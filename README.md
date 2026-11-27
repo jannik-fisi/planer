@@ -7,31 +7,30 @@ Grundlage ist das Konzept „JuKi Planer“ im Claude-Projekt „App für die Ju
 
 | Teil | Wo | Was |
 |---|---|---|
-| App-Hülle | Cloudflare Pages (aus diesem Repository) | Bildschirme, Knöpfe, Design – **keine Daten** |
+| App-Hülle | GitHub Pages (aus diesem Repository) | Bildschirme, Knöpfe, Design – **keine Daten** |
 | Daten & Anmeldung | Supabase, Frankfurt | Veranstaltungen, Aufgaben, Personen; geschützt durch Regeln pro Rolle |
-| Code | dieses Repository (privat) | Jede Änderung als Pull Request, erst nach „Merge“ live |
+| Code | dieses Repository (öffentlich) | Jede Änderung als Pull Request, erst nach „Merge“ live |
 
 ## Umgebungen
 
 - **Test**: Supabase-Projekt `juki-test`, Werte stehen in `.env` (öffentliche Werte, nicht geheim). Oben in der App steht „TEST“.
-- **Live**: kommt später. Die Werte werden in Cloudflare als Umgebungsvariablen gesetzt und haben Vorrang vor `.env`.
+- **Live**: kommt später, mit eigenen Werten im Veröffentlichungs-Ablauf.
 
 **Niemals ins Repository:** Datenbank-Passwort, Supabase Secret Key / `service_role`, Mail-Passwörter.
-Solche Werte gehören nur in die geschützten Einstellungen von Supabase, Cloudflare oder GitHub.
+Solche Werte gehören nur in die geschützten Einstellungen von Supabase oder GitHub (Secrets).
 
-## Veröffentlichung mit Cloudflare Pages (einmalig einrichten)
+## Veröffentlichung mit GitHub Pages (einmalig einrichten)
 
-1. Auf [dash.cloudflare.com](https://dash.cloudflare.com) ein kostenloses Konto anlegen (am besten mit der JuKi-Adresse).
-2. **Workers & Pages → Erstellen → Pages → Mit Git verbinden** → GitHub erlauben, nur dieses Repository auswählen.
-3. Einstellungen:
-   - Framework-Voreinstellung: **Vite** (oder „Keine“)
-   - Build-Befehl: `npm run build`
-   - Ausgabeverzeichnis: `dist`
-   - Produktionszweig: `main`
-4. Speichern. Danach gilt:
-   - **Merge auf `main`** → neue Version unter `https://<projektname>.pages.dev` (ca. 1 Minute)
-   - **Jeder Pull Request** bekommt automatisch eine eigene Vorschau-Adresse zum Ausprobieren, bevor gemergt wird
-5. Status-Seite in der App öffnen (ⓘ oben rechts) → alle Punkte sollten grün sein.
+Das Repository ist **öffentlich**, damit GitHub Pages kostenlos ist. Öffentlich ist nur der Code –
+Daten liegen geschützt in Supabase. Geheime Werte stehen nie im Code.
+
+1. **Settings → Pages → Build and deployment → Source: „GitHub Actions“** auswählen
+2. **Settings → Advanced Security** (bzw. „Code security“): **Secret Protection** und **Push protection** einschalten
+   – GitHub blockiert dann Uploads, in denen ein geheimer Schlüssel steckt
+3. Danach gilt: **Merge auf `main`** → der Ablauf „Veröffentlichen“ baut die App und stellt sie online
+   (ca. 1–2 Minuten, Fortschritt unter dem Reiter **Actions**)
+4. Adresse: `https://jannik-fisi.github.io/planer/` (nach dem Umzug in die Organisation: `https://juki-paulus.github.io/planer/`)
+5. In der App ⓘ oben rechts öffnen → alle Punkte sollten grün sein
 
 ## Ordner
 
@@ -41,9 +40,9 @@ Solche Werte gehören nur in die geschützten Einstellungen von Supabase, Cloudf
 | `src/components` | Bausteine wie Kopfbereich, untere Leiste, Update-Hinweis |
 | `src/lib` | Einstellungen und Verbindung zu Supabase |
 | `src/styles` | Farben und Design aus dem Prototyp |
-| `public` | App-Symbole, Sicherheits-Header für Cloudflare |
+| `public` | App-Symbole |
 | `supabase/migrations` | Datenbank-Aufbau (ab Etappe 2) |
-| `.github/workflows` | Automatische Prüfung bei jedem Pull Request |
+| `.github/workflows` | Automatische Prüfung bei jedem Pull Request und Veröffentlichung nach dem Merge |
 
 ## Für Entwickler
 

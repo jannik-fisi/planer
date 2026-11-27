@@ -1,0 +1,44 @@
+# Veröffentlicht die App auf GitHub Pages, sobald etwas auf main gemergt wird.
+# Einmalig nötig: Repository → Settings → Pages → Source: „GitHub Actions“.
+name: Veröffentlichen
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # erlaubt auch einen Start per Knopfdruck unter „Actions“
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Nie zwei Veröffentlichungen gleichzeitig
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  bauen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  veroeffentlichen:
+    needs: bauen
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

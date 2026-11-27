@@ -1,4 +1,4 @@
-// Alle Einstellungen an einer Stelle. Werte kommen aus .env bzw. aus Cloudflare.
+// Alle Einstellungen an einer Stelle. Werte kommen aus .env (bzw. später aus dem Veröffentlichungs-Ablauf).
 
 export const config = {
   supabaseUrl: import.meta.env.VITE_SUPABASE_URL ?? '',
