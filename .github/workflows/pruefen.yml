@@ -1,0 +1,31 @@
+# Prüft bei jedem Pull Request und auf main, ob die App fehlerfrei baut.
+# Veröffentlicht wird nicht hier, sondern automatisch von Cloudflare Pages.
+name: Prüfen
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  bauen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Typprüfung und Build
+        run: npm run build
+      - name: Kein geheimer Schlüssel im Code
+        run: |
+          if grep -rEn "sb_secret_|service_role" src .env; then
+            echo "::error::Geheimer Schlüssel gefunden! Bitte entfernen und in Supabase neu erzeugen."
+            exit 1
+          fi
