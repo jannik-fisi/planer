@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Kopf } from '../components/Layout'
 import { config, fehlendeEinstellungen } from '../lib/config'
-import { pruefeVerbindung, type VerbindungsErgebnis } from '../lib/supabase'
+import { holeDatenbankStand, pruefeVerbindung, type VerbindungsErgebnis } from '../lib/supabase'
 
 type Zeile = { farbe: 'grn' | 'org' | 'red' | ''; titel: string; text: string }
 
@@ -20,11 +20,14 @@ function StatusZeile({ farbe, titel, text }: Zeile) {
 export function Status() {
   const [ergebnis, setErgebnis] = useState<VerbindungsErgebnis | null>(null)
   const [laeuft, setLaeuft] = useState(false)
+  const [stand, setStand] = useState<Awaited<ReturnType<typeof holeDatenbankStand>> | null>(null)
   const fehlt = fehlendeEinstellungen()
 
   const pruefen = async () => {
     setLaeuft(true)
-    setErgebnis(await pruefeVerbindung())
+    const e = await pruefeVerbindung()
+    setErgebnis(e)
+    setStand(e.ok ? await holeDatenbankStand() : null)
     setLaeuft(false)
   }
   useEffect(() => {
@@ -52,6 +55,13 @@ export function Status() {
             text: 'Vor dem Login (Etappe 3) in Supabase abschalten: Authentication → Sign In / Providers → „Allow new users to sign up“ aus.',
           }
       : { farbe: '', titel: 'Selbst-Registrierung', text: 'Wird nach der Verbindung angezeigt' },
+    !stand
+      ? { farbe: '', titel: 'Datenbank-Stand', text: 'Wird nach der Verbindung angezeigt' }
+      : !stand.ok
+        ? { farbe: 'red', titel: 'Datenbank-Stand unbekannt', text: 'Abfrage fehlgeschlagen' }
+        : stand.stand
+          ? { farbe: 'grn', titel: 'Datenbank eingerichtet', text: `Neueste Änderung vom ${stand.stand}` }
+          : { farbe: 'org', titel: 'Datenbank noch leer', text: 'Der Ablauf „Datenbank“ auf GitHub hat noch nichts eingespielt.' },
     {
       farbe: installiert ? 'grn' : '',
       titel: installiert ? 'Als App installiert' : 'Im Browser geöffnet',
